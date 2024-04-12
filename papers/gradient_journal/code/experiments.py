@@ -1,6 +1,8 @@
 from pathlib import Path
 import itertools
 from multiprocessing import Pool, cpu_count
+import os
+import glob
 
 import pandas as pd
 
@@ -16,9 +18,9 @@ from bcause.util.watch import Watch
 
 # Single parameters
 num_runs = 100
-modelpath = "./papers/gradient_journal/models/synthetic/s123/random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai"
-resfolder = "./papers/gradient_journal/results/synthetic/s123/"
 run_step = 5
+resfolder = "./papers/gradient_journal/results/synthetic/s123/"
+
 
 # Multi parameters
 USE_FULL_PARAMETERS = True
@@ -119,7 +121,7 @@ def process_parameters(params):
         t0 = Watch.get_time()
 
 
-def generate_parameter_combinations():
+def generate_parameter_combinations(modelpath):
     # Generate combinations for each method 
     parameter_combinations = []
     for seed, remove_outliers in itertools.product(seed_values, remove_outliers_values):
@@ -137,13 +139,23 @@ if __name__ == "__main__":
     # Display the number of available worker processes
     available_workers = cpu_count()
     print(f"Number of available workers: {available_workers}")
-    parameter_combinations = generate_parameter_combinations()
-    if False: # set to True to test in non-parallel setting
-        process_parameters(parameter_combinations[0])  
-        quit()
-    # Parallel approach
-    with Pool() as pool:
-        pool.map(process_parameters, parameter_combinations)
+    modelpaths = glob.glob(os.path.join('./papers/gradient_journal/models/synthetic/s123/', '*.uai'))
+    n = len(modelpaths)
+    for i, modelpath in enumerate(modelpaths):
+        # e.g. modelpath = "./papers/gradient_journal/models/synthetic/s123/random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai"
+        model_name = os.path.basename(modelpath) # e.g. model_name = 'random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai'
+        if len(glob.glob(os.path.join(resfolder, model_name.replace('.', '_') + '*'))) == 18: # have we already computed all the results for the model?
+            print(f'Skipping {model_name} ({i} out of {n-1}) ...')
+            continue
+        else: # the results are not yet computed
+            print(f'Processing {model_name} ({i} out of {n-1}) ...')
+            parameter_combinations = generate_parameter_combinations(modelpath)
+            if 0: # set to True to test in non-parallel settings
+                process_parameters(parameter_combinations[0])  
+                quit()
+            # Parallel approach
+            with Pool() as pool:
+                pool.map(process_parameters, parameter_combinations)
 
 
 
