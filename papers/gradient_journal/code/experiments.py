@@ -23,7 +23,7 @@ run_step = 5
 # Multi parameters
 USE_FULL_PARAMETERS = True
 if USE_FULL_PARAMETERS:
-    seed_values = [1,2,3,4]
+    seed_values = [1] # after our discussion, we keep only one value for the moment
     remove_outliers_values = [True, False]
     method_values = ["EMCC", "GDCC"]
     max_iter_values_emcc = [25, 50, 100, 150, 200]  # Relevant for EMCC
