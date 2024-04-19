@@ -1,3 +1,6 @@
+# JAN2RAFA: I would be nice to have some error handling in the experiments, i.e.
+#           if an exception happens, it would save the problem into CSV and continue
+
 from pathlib import Path
 import itertools
 from multiprocessing import Pool, cpu_count
@@ -23,7 +26,7 @@ resfolder = "./papers/gradient_journal/results/synthetic/s123/"
 
 
 # Multi parameters
-USE_FULL_PARAMETERS = True
+USE_FULL_PARAMETERS = False
 if USE_FULL_PARAMETERS:
     seed_values = [1] # after our discussion, we keep only one value for the moment
     remove_outliers_values = [True, False]
@@ -52,6 +55,12 @@ def process_parameters(params):
 
     # Load the model
     model = StructuralCausalModel.read(modelpath)
+    if 0:
+        # plot the model
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        nx.draw(model.graph, with_labels=True, font_weight='bold')
+        plt.show() 
     #model.factors["V5"].values
 
     # Load data
@@ -150,7 +159,8 @@ if __name__ == "__main__":
         else: # the results are not yet computed
             print(f'Processing {model_name} ({i} out of {n-1}) ...')
             parameter_combinations = generate_parameter_combinations(modelpath)
-            if 0: # set to True to test in non-parallel settings
+            if 1: # set to True to test in non-parallel settings
+                print(parameter_combinations[0])
                 process_parameters(parameter_combinations[0])  
                 quit()
             # Parallel approach

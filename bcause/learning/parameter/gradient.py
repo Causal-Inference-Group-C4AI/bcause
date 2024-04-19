@@ -77,7 +77,7 @@ class GradientLikelihood(IterativeParameterLearning):
         N_bmVbmY, P_bmVbmYu = self._compute_N_and_P(bmV, bmY, data, m, U)
 
         results = self.fitPMF(initial_params, N_bmVbmY, P_bmVbmYu, **kwargs)
-        updated_factor = MultinomialFactor(m.get_domains(U), values=results['params'])
+        updated_factor = MultinomialFactor(m.get_domains({U}), values=results['params'])
         updated_factor.trajectory = results['trajectory'] # the trajectory of the iterations in the optimization process
 
         return updated_factor
