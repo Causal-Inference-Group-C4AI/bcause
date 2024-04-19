@@ -216,6 +216,10 @@ class MultinomialFactor(bf.DiscreteFactor, bf.ConditionalFactor):
             return self.marginalize(vars_remove)
         return self.marginalize(*vars_remove)
 
+
+    def normalize(self):
+        return self / self.marginalize(*self.left_vars)
+
     @property
     def name(self):
         vars_str = ",".join(self.left_vars)

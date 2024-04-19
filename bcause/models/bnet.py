@@ -3,6 +3,7 @@ from typing import Union, Iterable
 import networkx as nx
 
 from bcause.factors.mulitnomial import random_multinomial, uniform_multinomial
+from bcause.inference.probabilistic.elimination import VariableElimination
 from bcause.models.pgmodel import DiscreteDAGModel
 from bcause.util.domainutils import subdomain
 from bcause.util.graphutils import dag2str
@@ -53,6 +54,33 @@ class BayesianNetwork(DiscreteDAGModel):
         return BayesianNetwork.__buid(dag, domains, random_multinomial)
 
 
+    def arc_inversion(self, arc):
+        x, y = arc[0], arc[1]
+
+        # check that arc exists
+        if not arc in self.graph.edges:
+            raise ValueError(f"Arc {arc} does not exists in DAG.")
+
+        if len(self.get_parents(arc[1])) > 1:
+            raise NotImplementedError("Operation not implementing for node with other parents.")
+        else:
+            new_dag = nx.DiGraph([e for e in self.graph.edges if e != arc] + [(y, x)])
+            new_factors = dict()
+
+            inf = VariableElimination(self)
+
+            for v in self.variables:
+                if v not in arc:
+                    new_factors[v] = self.get_factors(v)[0]
+                else:
+                    if v == x:
+                        pa = self.get_parents(v) + [y]
+                    else:
+                        pa = self.get_parents(v).remove(x)
+
+                    new_factors[v] = inf.query(v, conditioning=pa)
+
+            return self.builder(dag=new_dag, factors=new_factors)
 
 
 if __name__ == "__main__":

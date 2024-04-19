@@ -36,12 +36,19 @@ class Classifier(ABC):
 
 class BNetClassifier(Classifier):
 
-    def __init__(self, domains, classvar):
+    def __init__(self, domains, classvar, dag=None):
         self._domains = domains
         self._classvar = classvar
         self._attributes = [c for c in domains.keys() if c != classvar]
-        self._model = self._build_model()
 
+        if dag is None:
+            self._model = self._build_model()
+        else:
+            self._model = BayesianNetwork.buid_uniform(dag, self._domains)
+
+
+    def _build_model(self) -> BayesianNetwork:
+        raise NotImplementedError()
 
     @property
     def model(self):
