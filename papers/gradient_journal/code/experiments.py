@@ -23,6 +23,8 @@ from bcause.util.watch import Watch
 num_runs = 100
 run_step = 5
 resfolder = "./papers/gradient_journal/results/synthetic/s123/"
+rewrite = False
+
 
 
 # Multi parameters
@@ -83,6 +85,10 @@ def process_parameters(params):
     # Set the results
     resfilepath = Path(resfolder, f"{modelname}_uai_{method}_x{num_runs}_iter{max_iter}_tol{tol}_ro{remove_outliers}_s{seed}.csv")
     results = pd.DataFrame()
+
+    # Check that the experiments with these parameters have not been run yet
+    if resfilepath.exists() and not rewrite:
+        return
 
     # Determine the method
     if method == "GDCC":
