@@ -1,11 +1,11 @@
-# JAN2RAFA: I would be nice to have some error handling in the experiments, i.e.
-#           if an exception happens, it would save the problem into CSV and continue
-
 from pathlib import Path
 import itertools
 from multiprocessing import Pool, cpu_count
 import os
 import glob
+from concurrent_log_handler import ConcurrentRotatingFileHandler
+import logging
+import sys
 
 import pandas as pd
 
@@ -25,8 +25,6 @@ run_step = 5
 resfolder = "./papers/gradient_journal/results/synthetic/s123/"
 rewrite = False
 
-
-
 # Multi parameters
 USE_FULL_PARAMETERS = False
 if USE_FULL_PARAMETERS:
@@ -45,13 +43,32 @@ else: # subset of full parameters used for debugg
 
 ### Set parameters End ###
 
-def process_parameters(params):
+log_format = '%(asctime)s|%(levelname)s|%(filename)s: %(message)s'
+logfile = Path(Path(resfolder).parent, f"experiments.log")
+
+
+def get_clogger(logname, level=logging.INFO, stream=sys.stdout, fmt=None, filename=None):
+    # ConcurrentRotatingFileHandler
+    log = logging.getLogger(logname)
+    log.setLevel(level)
+    stdout_handler = logging.StreamHandler(stream)
+    if fmt is not None:
+        stdout_handler.setFormatter(logging.Formatter(fmt))
+    log.addHandler(stdout_handler)
+
+    if filename is not None:
+        # Use ConcurrentRotatingFileHandler instead of FileHandler
+        file_handler = ConcurrentRotatingFileHandler(filename, "a", 512*1024, 5)
+        if fmt is not None:
+            file_handler.setFormatter(logging.Formatter(fmt))
+        log.addHandler(file_handler)
+    return log
+
+
+def process_parameters(params, log):
     num_runs, modelpath, resfolder, run_step, seed, remove_outliers, method, max_iter, tol = params
     # Processing logic here
     print(f"Processing: {seed=}, {remove_outliers=}, {method=}, {max_iter=}, {tol=}") # Single parameters are omitted here
-    # Define the logger
-    log_format = '%(asctime)s|%(levelname)s|%(filename)s: %(message)s'
-    log = get_logger(__name__, fmt=log_format)
 
     # Set the random seed
     randomUtil.seed(seed)
@@ -141,9 +158,13 @@ def process_parameters(params):
         t0 = Watch.get_time()
 
 
-def process_parameters_wrapper():
-
-    
+def process_parameters_wrapper(params):
+    # Define the logger
+    log = get_clogger(__name__, fmt=log_format, filename=logfile)
+    try:
+        process_parameters(params, log)
+    except Exception as e:
+        log.exception(e)
 
 def generate_parameter_combinations(modelpath):
     # Generate combinations for each method 
@@ -162,8 +183,9 @@ def generate_parameter_combinations(modelpath):
 
 if __name__ == "__main__":
     # Display the number of available worker processes
+    log = get_clogger(__name__, fmt=log_format, filename=logfile)
     available_workers = cpu_count()
-    print(f"Number of available workers: {available_workers}")
+    log.info(f"Number of available workers: {available_workers}")
     modelpaths = glob.glob(os.path.join('./papers/gradient_journal/models/synthetic/s123/', '*.uai'))
     n = len(modelpaths)
     for i, modelpath in enumerate(modelpaths):
@@ -172,14 +194,14 @@ if __name__ == "__main__":
         # e.g. modelpath = "./papers/gradient_journal/models/synthetic/s123/random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai"
         model_name = os.path.basename(modelpath) # e.g. model_name = 'random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai'
         if len(glob.glob(os.path.join(resfolder, model_name.replace('.', '_') + '*'))) == 18: # have we already computed all the results for the model?
-            print(f'Skipping {model_name} ({i} out of {n-1}). It has been done before. ')
+            log.info(f'Skipping {model_name} ({i} out of {n-1}). It has been done before. ')
             continue
         else: # the results are not yet computed
-            print(f'Processing {model_name} ({i} out of {n-1}) ...')
+            log.info(f'Processing {model_name} ({i} out of {n-1}) ...')
             parameter_combinations = generate_parameter_combinations(modelpath)
             if 1: # set to True to test in non-parallel settings
-                print(parameter_combinations[0])
-                process_parameters(parameter_combinations[0])  
+                log.info(parameter_combinations[0])
+                process_parameters_wrapper(parameter_combinations[0])  
             else:
                 # Parallel approach
                 with Pool() as pool:
