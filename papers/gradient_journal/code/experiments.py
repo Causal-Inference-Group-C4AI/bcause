@@ -189,8 +189,6 @@ if __name__ == "__main__":
     modelpaths = glob.glob(os.path.join('./papers/gradient_journal/models/synthetic/s123/', '*.uai'))
     n = len(modelpaths)
     for i, modelpath in enumerate(modelpaths):
-        if i < 5:
-            continue
         # e.g. modelpath = "./papers/gradient_journal/models/synthetic/s123/random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai"
         model_name = os.path.basename(modelpath) # e.g. model_name = 'random_mc2_n5_mid3_d1000_05_mr098_r10_8.uai'
         if len(glob.glob(os.path.join(resfolder, model_name.replace('.', '_') + '*'))) == 18: # have we already computed all the results for the model?
@@ -199,13 +197,13 @@ if __name__ == "__main__":
         else: # the results are not yet computed
             log.info(f'Processing {model_name} ({i} out of {n-1}) ...')
             parameter_combinations = generate_parameter_combinations(modelpath)
-            if 1: # set to True to test in non-parallel settings
+            if 0: # set to True to test in non-parallel settings
                 log.info(parameter_combinations[0])
                 process_parameters_wrapper(parameter_combinations[0])  
             else:
                 # Parallel approach
                 with Pool() as pool:
-                    pool.map(process_parameters, parameter_combinations)
+                    pool.map(process_parameters_wrapper, parameter_combinations)
 
 
 
