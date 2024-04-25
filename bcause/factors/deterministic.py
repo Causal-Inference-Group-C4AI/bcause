@@ -132,11 +132,19 @@ class DeterministicFactor(bf.DiscreteFactor, bf.ConditionalFactor):
 def canonical_deterministic(domain:Dict, exo_var:Hashable, right_endo_vars:list=None, vtype=None) -> MultinomialFactor:
     vtype = vtype or DataStore.DEFAULT_STORE
 
+
+
     left_var = [x for x in domain.keys() if x not in right_endo_vars and x != exo_var]
     if len(left_var) != 1:
         raise ValueError("Canonical for non-markovian")
 
     left_var = left_var[0]
+
+
+
+    if exo_var not in domain:
+        exoCard = len(domain[left_var]) ** np.prod([len(domain[v]) for v in right_endo_vars])
+        domain[exo_var] = list(range(0, exoCard))
 
     domEndoPa = dutils.assingment_space(dutils.subdomain(domain, *right_endo_vars))
     m = len(domEndoPa)
@@ -144,5 +152,5 @@ def canonical_deterministic(domain:Dict, exo_var:Hashable, right_endo_vars:list=
     new_values = list(product(*[domain[left_var]] * m))
     new_dom = {**dutils.subdomain(domain, left_var), **dutils.subdomain(domain, exo_var), **dutils.subdomain(domain, *right_endo_vars)}
 
-    return DeterministicFactor(domain=new_dom, values=new_values, left_vars=[left_var], vtype=vtype)
+    return DeterministicFactor(domain=new_dom, values=np.array(new_values).flatten(), left_vars=[left_var], vtype=vtype)
 
