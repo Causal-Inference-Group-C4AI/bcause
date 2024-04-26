@@ -269,6 +269,16 @@ class StructuralCausalModel(DiscreteCausalDAGModel):
         obs = data.to_dict("records")
         return np.sum(bn.log_prob(obs,variables))
 
+    def update_domains(self, **domains):
+        new_factors = self.factors
+        for v, d in domains.items():
+            for k in new_factors.keys():
+                f = new_factors[k]
+                if v in f.variables:
+                    f = f.change_domains(**{v: d})
+                new_factors[k] = f
+        return self.builder(dag=self.graph, factors=new_factors)
+
 
     @property
     def rating(self):
