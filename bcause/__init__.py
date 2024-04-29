@@ -1,4 +1,4 @@
-__version__ = '0.0.3-SNAPSHOT'
+__version__ = '0.0.3-a1'
 
 from .conversion import *
 from .factors import *
