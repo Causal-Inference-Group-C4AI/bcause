@@ -143,7 +143,7 @@ def canonical_deterministic(domain:Dict, exo_var:Hashable, right_endo_vars:list=
 
 
     if exo_var not in domain:
-        exoCard = len(domain[left_var]) ** np.prod([len(domain[v]) for v in right_endo_vars])
+        exoCard = int(len(domain[left_var]) ** np.prod([len(domain[v]) for v in right_endo_vars]))
         domain[exo_var] = list(range(0, exoCard))
 
     domEndoPa = dutils.assingment_space(dutils.subdomain(domain, *right_endo_vars))
