@@ -101,7 +101,7 @@ class EMCC(CausalMultiInference, CausalObservationalInference):
         self._agg = SimpleModelAggregatorEM(self._prior_model, self._data, max_iter=self._max_iter, parallel=self._parallel)
         self._agg.run(num_models=self._num_runs)
         self.set_models(self._agg.models)
-        self._model = self._models[0]
+        #self._model = self._models[0]
         return super().compile()
 
 
@@ -180,11 +180,11 @@ if __name__=="__main__":
     # print(inf.counterfactual_query("X", do=dict(Y=0)))
     # print(inf.prob_necessity("Y","X"))
 
-
-
-    inf = GDCC(m, data, num_runs=10)
-    print(inf.causal_query("X", do=dict(Y=0)))
-    print(inf.counterfactual_query("X", do=dict(Y=0)))
-    print(inf.prob_necessity("Y","X"))
-
+    #
+    #
+    # inf = GDCC(m, data, num_runs=10)
+    # print(inf.causal_query("X", do=dict(Y=0)))
+    # print(inf.counterfactual_query("X", do=dict(Y=0)))
+    # print(inf.prob_necessity("Y","X"))
+    #
 
