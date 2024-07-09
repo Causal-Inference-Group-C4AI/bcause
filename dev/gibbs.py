@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,6 +15,15 @@ from bcause.models.cmodel import StructuralCausalModel
 from bcause.util import graphutils
 from bcause.util.datautils import to_counts
 from bcause.util.equtils import seq_to_pandas
+from bcause.util.runningutils import get_logger
+
+log_format = '%(asctime)s|%(levelname)s|%(filename)s: %(message)s'
+
+import logging
+
+
+logging.disable(logging.CRITICAL)
+
 
 ####### Model definition #########
 
