@@ -8,6 +8,7 @@ from typing import Dict, List, Iterable, Union, Hashable
 
 import numpy as np
 import pandas as pd
+import bcause.util.domainutils as dutils
 
 from bcause.factors.values.store import  DataStore
 from bcause.factors.values import store_dict
@@ -243,6 +244,21 @@ def random_deterministic(dom:Dict, right_vars:list=None, vtype=None):
 def canonical_multinomial(domain:Dict, exo_var:Hashable, right_endo_vars:list=None, vtype=None) -> MultinomialFactor:
     from bcause.factors.deterministic import canonical_deterministic
     return canonical_deterministic(domain, exo_var, right_endo_vars, vtype).to_multinomial()
+
+def canonical_for_model(model, domains, x):
+    exoPa = model.get_exogenous_parents(x)
+    exovar = exoPa[0]
+
+    if len(exoPa)>1 or len(model.get_edogenous_children(exovar))!=1:
+        raise ValueError("Method only valid for Markovian models")
+
+    right_endoVars = model.get_edogenous_parents(x)
+    endoVars = right_endoVars + [x]
+    dom = dutils.subdomain(domains, *endoVars)
+    return canonical_multinomial(dom, exovar, right_endoVars).reorder(*endoVars)
+
+
+
 
 if __name__ == "__main__":
 
