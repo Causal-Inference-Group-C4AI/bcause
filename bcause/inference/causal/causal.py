@@ -170,8 +170,8 @@ class PearlBounds(CausalInference, CausalObservationalInference):
 
     def _compute_bounds(self, query, cause, effect, true_false_cause:tuple=None, true_false_effect:tuple=None):
 
-        if not self.model.exogeneity(cause,effect):
-            raise ValueError("Exogeneity condition not satisfied")
+#        if not self.model.exogeneity(cause,effect):
+#            raise ValueError("Exogeneity condition not satisfied")
 
         if not self._compiled: self.compile()
 
