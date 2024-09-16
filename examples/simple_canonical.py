@@ -3,6 +3,11 @@ import networkx as nx
 from bcause.factors.mulitnomial import canonical_for_model, uniform_multinomial
 from bcause.models.cmodel import StructuralCausalModel
 
+endo_dag = nx.DiGraph([("X", "Y")])
+endo_dom = dict(X=["x1", "x2"], Y=["y1","y2"])
+
+
+
 # Define a DAG and the domains for the endogenous variables
 dag = nx.DiGraph([("X", "Y"), ("U", "Y"), ("V", "X")])
 endo_dom = dict(X=["x1", "x2"], Y=["y1","y2"])
