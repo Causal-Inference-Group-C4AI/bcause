@@ -3,7 +3,10 @@ import itertools
 from multiprocessing import Pool, cpu_count
 import os
 import glob
+
 from concurrent_log_handler import ConcurrentRotatingFileHandler
+#pip install concurrent-log-handler
+
 import logging
 import sys
 
@@ -23,20 +26,20 @@ from bcause.util.watch import Watch
 num_runs = 100
 run_step = 5
 resfolder = "./papers/gradient_journal/results/synthetic/s123/"
-rewrite = False
+rewrite = True
 
 # Multi parameters
 USE_FULL_PARAMETERS = False
 if USE_FULL_PARAMETERS:
     seed_values = [1] # after our discussion, we keep only one value for the moment
     remove_outliers_values = [True, False]
-    method_values = ["GDCC"] #["EMCC", "GDCC"] # TODO
+    method_values = ["EMCC", "GDCC"]
     max_iter_values_emcc = [25, 50, 100, 150, 200]  # Relevant for EMCC
     tol_values_gdcc = [1e-3, 1e-5, 1e-7, 1e-9]     # Relevant for GDCC
 else: # subset of full parameters used for debugg
     seed_values = [1]
     remove_outliers_values = [True, False]
-    method_values = ["EMCC", "GDCC"]
+    method_values = ["GDCC"] #["EMCC", "GDCC"]
     max_iter_values_emcc = [25, 50, 100, 150]  # Relevant for EMCC
     tol_values_gdcc = [1e-3, 1e-5, 1e-7, 1e-9]  # Relevant for GDCC
     # this settings renders 16 independent process, as we have 16 available workers at our machine
@@ -104,8 +107,8 @@ def process_parameters(params, log):
     results = pd.DataFrame()
 
     # Check that the experiments with these parameters have not been run yet
-    if resfilepath.exists() and not rewrite:
-        return
+    # if resfilepath.exists() and not rewrite:
+    #     return
 
     # Determine the method
     if method == "GDCC":
@@ -197,7 +200,7 @@ if __name__ == "__main__":
         else: # the results are not yet computed
             log.info(f'Processing {model_name} ({i} out of {n-1}) ...')
             parameter_combinations = generate_parameter_combinations(modelpath)
-            if 0: # set to True to test in non-parallel settings
+            if 1: # set to True to test in non-parallel settings
                 log.info(parameter_combinations[0])
                 process_parameters_wrapper(parameter_combinations[0])  
             else:
