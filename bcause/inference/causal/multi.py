@@ -132,6 +132,7 @@ class GDCC(CausalMultiInference, CausalObservationalInference):
         self._agg.run(num_models=self._num_runs)
         self.set_models(self._agg.models)
         return super().compile()
+    
     def compile_incremental(self, step_runs=1, *args, **kwargs) -> Inference:
         #for i in range(self._num_runs):
         while len(self.models)<self._num_runs:
