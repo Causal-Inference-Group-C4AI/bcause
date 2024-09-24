@@ -5,7 +5,7 @@ import numpy as np
 
 from bcause.factors import DeterministicFactor, MultinomialFactor
 from bcause.factors.imprecise import IntervalProbFactor
-from bcause.inference.causal.causal import CausalInference
+from bcause.inference.causal.causal import CausalInference, CausalObservationalInference
 from bcause.inference.inference import Inference
 from bcause.learning.aggregator.aggregator import SimpleModelAggregatorEM, SimpleModelAggregatorGD
 from bcause.learning.parameter.expectation_maximization import ExpectationMaximization
@@ -85,10 +85,7 @@ class CausalMultiInference(CausalInference):
 
 
 
-class CausalObservationalInference(ABC):
-    @property
-    def data(self):
-        return self._data
+
 
 class EMCC(CausalMultiInference, CausalObservationalInference):
     def __init__(self, model:StructuralCausalModel, data, causal_inf_fn: Callable = None, interval_result=True, max_iter=100, num_runs=10, parallel = False, min_rating=0.9, outliers_removal=True):
@@ -104,6 +101,7 @@ class EMCC(CausalMultiInference, CausalObservationalInference):
         self._agg = SimpleModelAggregatorEM(self._prior_model, self._data, max_iter=self._max_iter, parallel=self._parallel)
         self._agg.run(num_models=self._num_runs)
         self.set_models(self._agg.models)
+        #self._model = self._models[0]
         return super().compile()
 
 
@@ -131,6 +129,7 @@ class GDCC(CausalMultiInference, CausalObservationalInference):
         self._agg = SimpleModelAggregatorGD(self._prior_model, self._data, tol=self._tol, max_iter=self._max_iter, parallel=self._parallel)
         self._agg.run(num_models=self._num_runs)
         self.set_models(self._agg.models)
+        self._model = self._models[0]
         return super().compile()
     
     def compile_incremental(self, step_runs=1, *args, **kwargs) -> Inference:
@@ -182,11 +181,11 @@ if __name__=="__main__":
     # print(inf.counterfactual_query("X", do=dict(Y=0)))
     # print(inf.prob_necessity("Y","X"))
 
-
-
-    inf = GDCC(m, data, num_runs=10)
-    print(inf.causal_query("X", do=dict(Y=0)))
-    print(inf.counterfactual_query("X", do=dict(Y=0)))
-    print(inf.prob_necessity("Y","X"))
-
+    #
+    #
+    # inf = GDCC(m, data, num_runs=10)
+    # print(inf.causal_query("X", do=dict(Y=0)))
+    # print(inf.counterfactual_query("X", do=dict(Y=0)))
+    # print(inf.prob_necessity("Y","X"))
+    #
 
