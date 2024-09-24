@@ -23,20 +23,23 @@ def toMultinomialFactor(factor : pfd.TabularCPD, vtype=None) -> bfd.MultinomialF
     return bfd.MultinomialFactor(domain, data, right_vars=right_vars, vtype=vtype)
 
 def toTabularCPT(f : bfd.MultinomialFactor) -> pfd.TabularCPD:
+
+    f = f.reorder(*f.left_vars)
     v = list(f.left_domain.keys())[0]
     card = f.store.cardinality_dict
     values = f.values_array()
     if np.ndim(values)<2:
-        values = np.expand_dims(values, axis=0)
+        values = np.expand_dims(values, axis=0).T
 
     if np.ndim(values) > 2:
         shape = values.shape
-        values = values.reshape(np.prod(shape[:-1]), shape[0])
+        values = values.reshape(shape[0],np.prod(shape[1:]))
+
 
     args = dict(
         variable = v,
         variable_card = card[v],
-        values = values.T,
+        values = values,
         state_names = f.domain
     )
 
@@ -45,7 +48,9 @@ def toTabularCPT(f : bfd.MultinomialFactor) -> pfd.TabularCPD:
         args["evidence"] = parents
         args["evidence_card"] = [card[p] for p in parents]
 
-    return pfd.TabularCPD(**args)
+    out = pfd.TabularCPD(**args)
+    #toMultinomialFactor(out).marginalize(*f.left_vars)
+    return out
 
 
 def toBCauseBNet(orig : pm.BayesianNetwork, vtype=None) -> 'bm.BayesianNetwork':
@@ -59,4 +64,11 @@ def toBCauseBNet(orig : pm.BayesianNetwork, vtype=None) -> 'bm.BayesianNetwork':
 def toPgmpyBNet(orig : 'bm.BayesianNetwork') -> pm.BayesianNetwork:
     dest = pm.BayesianNetwork(orig.graph)
     dest.add_cpds(*[toTabularCPT(f) for f in orig.factors.values()])
+
+    for f in orig.factors.values():
+        print(f)
+        toTabularCPT(f)
+
+
+
     return dest
