@@ -27,8 +27,8 @@ from bcause.util.watch import Watch
 num_runs = 100
 run_step = 5
 resfolder = "./papers/gradient_journal/results/synthetic/simple/"
-REWRITE = False
-RUN_IN_PARALLEL = True
+REWRITE = True
+RUN_IN_PARALLEL = False
 
 # Multi parameters
 USE_FULL_PARAMETERS = True
@@ -162,8 +162,8 @@ def process_parameters(params, log):
                 exact_upp = exact[query][cause][1]
 
                 t2 = Watch.get_time()     
-                approx_low, approx_upp = infer_f(cause, effect, true_false_cause=(0,1), true_false_effect=(0,1))
-                tinfer = Watch.get_time()-t2 # TODO: Rafa, check if the times are computed correctly
+                approx_low, approx_upp = infer_f(cause, effect) 
+                tinfer = Watch.get_time()-t2 
 
                 err = rrmse(exact_low, approx_low, exact_upp, approx_upp)
                 err2 = rmse(exact_low, approx_low, exact_upp, approx_upp)
