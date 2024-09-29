@@ -25,7 +25,7 @@ class DeterministicFactor(bf.DiscreteFactor, bf.ConditionalFactor):
         vtype = vtype or DataStore.DEFAULT_STORE
 
         left_vars = as_lists(left_vars)
-        self._domain = OrderedDict(domain) # TODO: Rafa, I think dict() also keeps the order of insertion from Python 3.7
+        self._domain = OrderedDict(domain)
         self.set_variables(list(domain.keys()), left_vars, right_vars)
 
         if len(self.left_vars)!=1:
